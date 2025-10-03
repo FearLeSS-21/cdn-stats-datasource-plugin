@@ -19,5 +19,6 @@ export const defaultQuery: Partial<GCQuery> = {
   granularity: createOptionForGranularity(GCGranularity.OneHour),
 };
 export const defaultVariableQuery: Partial<GCVariableQuery> = {
-  selector: { value: GCVariable.Resource, label: "resourceID" },
+  selector: { value: GCVariable.Resource, label: "resourceID" } ,
 };
+//s
