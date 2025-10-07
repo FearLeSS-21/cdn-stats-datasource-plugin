@@ -257,17 +257,17 @@ export class DataSource extends DataSourceApi<GCQuery, GCDataSourceOptions> {
   async testDatasource(): Promise<any> {
     try {
       // TODO: Use the fetch function instead datasourceRequest
-      const resp = await getBackendSrv().datasourceRequest({
-        method: "GET",
-        url: `${this.url}/users/me`,
-        responseType: "json",
-        showErrorAlert: true,
-      });
+     const resp = await getBackendSrv().datasourceRequest<any>({
+  method: "GET",
+  url: `${this.url}/users/me`,
+  responseType: "json",
+  showErrorAlert: true,
+});
 
-      return {
-        status: "success",
-        message: `You successfully authenticated as ${resp.data.name}`,
-      };
+return {
+  status: "success",
+  message: `You successfully authenticated as ${resp.data.name}`,
+};
     } catch (e) {
       // @ts-ignore
       let message = e.statusText;
