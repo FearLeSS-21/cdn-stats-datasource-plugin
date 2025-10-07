@@ -21,4 +21,4 @@ export const defaultQuery: Partial<GCQuery> = {
 export const defaultVariableQuery: Partial<GCVariableQuery> = {
   selector: { value: GCVariable.Resource, label: "resourceID" } ,
 };
-//s
+//test
