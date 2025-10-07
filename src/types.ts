@@ -34,7 +34,7 @@ export enum GCGrouping {
 
 export enum GCGranularity {
   FiveMinutes = "5m",
-  FifteenMinutes = "15m",
+  FifteenMinutes = "10m",
   OneHour = "1h",
   OneDay = "1d",
 }
