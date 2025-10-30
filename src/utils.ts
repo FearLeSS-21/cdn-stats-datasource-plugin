@@ -14,41 +14,8 @@ import { getTemplateSrv } from "@grafana/runtime";
 import { GCPoint, GCQuery } from "./types";
 import { TimeInSeconds } from "./times";
 
-export const renderTemplate = (
-  aliasPattern: string,
-  aliasData: { [key: string]: string }
-) => {
-  const aliasRegex = /\{\{\s*(.+?)\s*\}\}/g;
-  return aliasPattern.replace(aliasRegex, (_match, g1) => {
-    if (aliasData[g1]) {
-      return aliasData[g1];
-    }
-    return "";
-  });
-};
-
-export const takeNumbers = (
-  target?: string,
-  scopedVars?: ScopedVars,
-  format?: string | Function
-): number[] => {
-  return getTemplateSrv()
-    .replace(target || "", scopedVars, format)
-    .split(",")
-    .filter(Boolean)
-    .map((x) => +x);
-};
-
-export const takeStrings = (
-  target?: string,
-  scopedVars?: ScopedVars,
-  format?: string | Function
-): string[] => {
-  return getTemplateSrv()
-    .replace(target || "", scopedVars, format)
-    .split(",")
-    .filter(Boolean);
-};
+export const renderTemplate = (aliasPattern: string, aliasData: Record<string, string>): string =>
+  aliasPattern.replace(/\{\{\s*(.+?)\s*\}\}/g, (_match, g1) => aliasData[g1] || "");
 
 export const getTimeField = (data: GCPoint[], isMs = false): MutableField => ({
   name: TIME_SERIES_TIME_FIELD_NAME,
@@ -57,17 +24,15 @@ export const getTimeField = (data: GCPoint[], isMs = false): MutableField => ({
   values: data.map((val) => (isMs ? val[0] : val[0] * TimeInSeconds.MILLISECOND)),
 });
 
-export const getEmptyDataFrame = () => {
-  return toDataFrame({
-    name: "dataFrameName",
+export const getEmptyDataFrame = () =>
+  toDataFrame({
+    name: "empty",
     fields: [],
   });
-};
 
-type ValueFieldOptions = {
-  data: GCPoint[];
+export type ValueFieldOptions = {
+  data?: GCPoint[];
   valueName?: string;
-  parseValue?: boolean;
   labels?: Labels;
   unit?: string;
   decimals?: number;
@@ -102,29 +67,16 @@ export interface LabelInfo {
   labels: Labels;
 }
 
-export const createLabelInfo = (
-  labels: Labels,
-  query: GCQuery,
-  scopedVars: ScopedVars
-): LabelInfo => {
+export const createLabelInfo = (labels: Labels, query: GCQuery, scopedVars: ScopedVars): LabelInfo => {
   if (query?.legendFormat) {
-    const title = renderTemplate(
-      getTemplateSrv().replace(query.legendFormat, scopedVars),
-      labels
-    );
+    const title = renderTemplate(getTemplateSrv().replace(query.legendFormat, scopedVars), labels);
     return { name: title, labels };
   }
-
   const { metric, ...labelsWithoutMetric } = labels;
   const labelPart = formatLabels(labelsWithoutMetric);
-  let title = `${metric} ${labelPart}`;
+  const title = metric ? `${metric} ${labelPart}` : labelPart;
   return { name: title, labels: labelsWithoutMetric };
 };
 
-export const getValueVariable = (
-  target: Array<string | number>
-): MetricFindValue[] => {
-  return target.filter(unique).map((text) => ({ text: `${text}` }));
-};
-
-export const unique = <T>(v: T, idx: number, a: T[]) => a.indexOf(v) === idx;
+export const getValueVariable = (target: Array<string | number>): MetricFindValue[] =>
+  Array.from(new Set(target)).map((text) => ({ text: `${text}` }));

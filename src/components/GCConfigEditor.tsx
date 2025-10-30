@@ -1,13 +1,12 @@
-import React, { ChangeEvent, PureComponent } from "react";
-import { Alert, Legend, LegacyForms } from "@grafana/ui";
+import React, { PureComponent, ChangeEvent } from "react";
+import { Legend, LegacyForms, Alert } from "@grafana/ui";
 import { DataSourcePluginOptionsEditorProps } from "@grafana/data";
 import { GCDataSourceOptions, GCJsonData, GCSecureJsonData } from "../types";
 import { getAuthorizationValue, getHostnameValue } from "../token";
 
 const { FormField, SecretFormField } = LegacyForms;
 
-interface Props
-  extends DataSourcePluginOptionsEditorProps<GCDataSourceOptions> {}
+interface Props extends DataSourcePluginOptionsEditorProps<GCDataSourceOptions> {}
 
 interface State {
   apiKey: string;
@@ -17,9 +16,8 @@ interface State {
 export class GCConfigEditor extends PureComponent<Props, State> {
   constructor(props: Props) {
     super(props);
-    const secureJsonData = (props.options.secureJsonData ||
-      {}) as GCSecureJsonData;
-    const jsonData = (props.options.jsonData || {}) as GCJsonData;
+    const secureJsonData: GCSecureJsonData = props.options.secureJsonData || {};
+    const jsonData: GCJsonData = props.options.jsonData || {};
 
     this.state = {
       apiKey: secureJsonData.apiKey || "",
@@ -27,56 +25,35 @@ export class GCConfigEditor extends PureComponent<Props, State> {
     };
   }
 
-  onApiUrlChange = (event: ChangeEvent<HTMLInputElement>) => {
-    this.setState({
-      apiUrl: event.target.value,
-    });
-  };
+  onApiUrlChange = (e: ChangeEvent<HTMLInputElement>) => this.setState({ apiUrl: e.target.value });
+  onApiKeyChange = (e: ChangeEvent<HTMLInputElement>) => this.setState({ apiKey: e.target.value });
 
   updateApiUrl = () => {
     const { onOptionsChange, options } = this.props;
     const apiUrl = getHostnameValue(this.state.apiUrl.trim());
-    onOptionsChange({
-      ...options,
-      jsonData: { apiUrl },
-    });
-  };
-
-  onApiKeyChange = (event: ChangeEvent<HTMLInputElement>) => {
-    this.setState({
-      apiKey: event.target.value,
-    });
+    onOptionsChange({ ...options, jsonData: { ...options.jsonData, apiUrl } });
   };
 
   updateApiKey = () => {
     const { onOptionsChange, options } = this.props;
     const apiKey = getAuthorizationValue(this.state.apiKey.trim());
-    onOptionsChange({
-      ...options,
-      secureJsonData: { apiKey },
-    });
+    onOptionsChange({ ...options, secureJsonData: { ...options.secureJsonData, apiKey } });
   };
 
   onResetApiKey = () => {
     const { onOptionsChange, options } = this.props;
     onOptionsChange({
       ...options,
-      secureJsonFields: {
-        ...options.secureJsonFields,
-        apiKey: false,
-      },
-      secureJsonData: {
-        ...options.secureJsonData,
-        apiKey: "",
-      },
+      secureJsonFields: { ...options.secureJsonFields, apiKey: false },
+      secureJsonData: { ...options.secureJsonData, apiKey: "" },
     });
+    this.setState({ apiKey: "" });
   };
 
   render() {
     const { options } = this.props;
     const { apiKey, apiUrl } = this.state;
-    const { secureJsonFields } = options;
-    const isConfigured = secureJsonFields && secureJsonFields.apiKey;
+    const isConfigured = options.secureJsonFields?.apiKey;
 
     return (
       <>
@@ -84,20 +61,20 @@ export class GCConfigEditor extends PureComponent<Props, State> {
 
         <div className="gf-form-group">
           <FormField
-            label={"URL"}
+            label="URL"
             labelWidth={8}
             inputWidth={20}
-            placeholder={"API base url"}
+            placeholder="API base url"
             value={apiUrl}
             onChange={this.onApiUrlChange}
             onBlur={this.updateApiUrl}
-            required={true}
+            required
           />
         </div>
 
         <div className="gf-form-group">
           <SecretFormField
-            isConfigured={isConfigured}
+            isConfigured={!!isConfigured}
             label="API key"
             placeholder="Secure field"
             labelWidth={8}
@@ -110,7 +87,7 @@ export class GCConfigEditor extends PureComponent<Props, State> {
         </div>
 
         <div className="gf-form-group">
-          <Alert severity={"info"} title="How to create a API token?">
+          <Alert severity="info" title="How to create an API token?">
             <a
               href="https://gcore.com/docs/account-settings/create-use-or-delete-a-permanent-api-token"
               target="_blank"

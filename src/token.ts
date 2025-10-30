@@ -43,3 +43,4 @@ export const removeHttpPrefix = (url: string): string =>
 export const getHostnameValue = (url: string): string => {
   return stripTrailingSlash(removeHttpPrefix(url));
 };
+
