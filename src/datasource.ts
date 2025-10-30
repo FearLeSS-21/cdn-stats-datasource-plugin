@@ -21,13 +21,12 @@ import {
   GCDNSRecordType,
   GCPoint,
   ZoneResponse,
-  GCGranularity, // merged to remove duplicate import
+  GCGranularity,
 } from "./types";
 import { createLabelInfo, getEmptyDataFrame, getTimeField, getValueField, getValueVariable } from "./utils";
 import { defaultQuery } from "./defaults";
 import { getUnit } from "./unit";
 import { getSecondsByGranularity } from "./granularity";
-
 
 export class DataSource extends DataSourceApi<GCQuery, GCDataSourceOptions> {
   url?: string;
@@ -84,6 +83,7 @@ export class DataSource extends DataSourceApi<GCQuery, GCDataSourceOptions> {
     return targets.map((q) => defaults(q, defaultQuery));
   }
 
+  // ✅ Fixed transform method with safe timestamp normalization
   private async transform(
     data: GCResponseStats[],
     options: DataQueryRequest<GCQuery>,
@@ -103,15 +103,18 @@ export class DataSource extends DataSourceApi<GCQuery, GCDataSourceOptions> {
     const [unit, transformFn] = getUnit(query, data);
     const firstRow = data[0];
 
-    // ----- Granularity bucket size in milliseconds -----
+    // Granularity bucket size in milliseconds
     const bucketSizeMs =
       query.granularity?.value !== undefined
         ? getSecondsByGranularity(query.granularity.value as unknown as GCGranularity) * 1000
         : 5 * 60 * 1000; // default 5 mins
 
-    // ----- Bucket points -----
+    // --- Timestamp normalization helper ---
+    const normalizeTs = (ts: number): number => (ts > 1e12 ? ts : ts * 1000);
+
+    // Bucket points
     const rawPoints: GCPoint[] = firstRow.requests
-      ? Object.entries(firstRow.requests).map(([ts, v]) => [Number(ts) * 1000, Number(v)] as GCPoint)
+      ? Object.entries(firstRow.requests).map(([ts, v]) => [normalizeTs(Number(ts)), Number(v)] as GCPoint)
       : [];
 
     const bucketMap = new Map<number, number>();
@@ -128,7 +131,8 @@ export class DataSource extends DataSourceApi<GCQuery, GCDataSourceOptions> {
 
       const metricsData: Map<number, number> = row.requests
         ? Object.entries(row.requests).reduce((acc, [ts, v]) => {
-            const bucket = Math.floor(Number(ts) * 1000 / bucketSizeMs) * bucketSizeMs;
+            const normalized = normalizeTs(Number(ts));
+            const bucket = Math.floor(normalized / bucketSizeMs) * bucketSizeMs;
             const prev = acc.get(bucket) || 0;
             acc.set(bucket, prev + Number(v));
             return acc;
