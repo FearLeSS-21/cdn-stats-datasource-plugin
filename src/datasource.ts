@@ -210,7 +210,7 @@ export class DataSource extends DataSourceApi<GCQuery, GCDataSourceOptions> {
         url: `${this.url}/zones/all/statistics`,
         responseType: "json",
         params: { from: now - 3600, to: now },
-      });
+      }); //here
 
       return resp.status === 200
         ? { status: "success", message: "Successfully connected to Gcore DNS API." }
