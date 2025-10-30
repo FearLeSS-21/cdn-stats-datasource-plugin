@@ -4,28 +4,30 @@ import { debounce } from "lodash";
 
 const { FormField } = LegacyForms;
 
-export interface InputProps<T>
-  extends Omit<React.HTMLProps<HTMLInputElement>, "value"> {
-  width?: number;
-  inputWidth?: number;
-  value?: T;
+interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "value"> {
+  value?: string;
   onChange: (e: ChangeEvent<HTMLInputElement>) => void;
-  tooltip?: string;
-  type: string;
   label: string;
+  inputWidth?: number;
+  tooltip?: string;
+  type?: string;
   debounce?: number;
 }
 
-export const GCInput: React.FC<InputProps<string>> = (rawProps) => {
-  const { onChange, ...props } = rawProps;
-  const [value, setValue] = useState(props.value);
-  const debouncedFunc = useRef(
-    debounce((q) => onChange(q), props.debounce || 500)
-  ).current;
-  const onChangeDebounce = (e: ChangeEvent<HTMLInputElement>) => {
+export const GCInput: React.FC<InputProps> = ({
+  value: initialValue = "",
+  onChange,
+  debounce: delay = 500,
+  ...props
+}) => {
+  const [value, setValue] = useState(initialValue);
+  const debouncedChange = useRef(debounce((e: ChangeEvent<HTMLInputElement>) => onChange(e), delay)).current;
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     e.persist();
     setValue(e.target.value);
-    debouncedFunc(e);
+    debouncedChange(e);
   };
-  return <FormField {...props} value={value} onChange={onChangeDebounce} />;
+
+  return <FormField {...props} value={value} onChange={handleChange} />;
 };

@@ -1,10 +1,13 @@
-import React from "react";
+import React, { FC, useMemo } from "react";
 import { Select, SelectCommonProps } from "@grafana/ui";
-import { GCMetric } from "types";
+import { SelectableValue } from "@grafana/data";
+import { GCMetric } from "../types";
 import { createOptions } from "../metric";
 
-export const GCSelectMetric: React.FC<
-  Omit<SelectCommonProps<GCMetric>, "options">
-> = (opts) => {
-  return <Select {...opts} options={createOptions()} />;
+export const GCSelectMetric: FC<Omit<SelectCommonProps<GCMetric>, "options"> & {
+  value?: SelectableValue<GCMetric>; // Accept SelectableValue
+}> = ({ value, onChange, ...props }) => {
+  const options = useMemo(() => createOptions(), []);
+
+  return <Select {...props} options={options} value={value} onChange={onChange} />;
 };

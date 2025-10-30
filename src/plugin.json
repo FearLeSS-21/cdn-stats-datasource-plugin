@@ -1,32 +1,22 @@
 {
   "$schema": "https://raw.githubusercontent.com/grafana/grafana/master/docs/sources/developers/plugins/plugin.schema.json",
   "type": "datasource",
-  "name": "cdn-stats",
-  "id": "gcorelabs-cdn-stats-datasource",
+  "name": "G-Core DNS Stats",
+  "id": "gcore-dns-stats",
   "metrics": true,
   "info": {
-    "description": "",
+    "description": "Datasource for G-Core DNS Zone Statistics",
     "author": {
       "name": "G-Core",
       "url": "https://gcore.com/",
       "email": "support@gcore.com"
     },
-    "keywords": ["cdn", "statistics"],
+    "keywords": ["dns", "statistics"],
     "logos": {
       "small": "img/logo-small.svg",
       "large": "img/logo-large-black.png"
     },
-    "links": [
-      {
-        "name": "Website",
-        "url": "https://github.com/G-Core/cdn-stats-datasource-plugin"
-      },
-      {
-        "name": "License",
-        "url": "https://github.com/G-Core/cdn-stats-datasource-plugin/blob/master/LICENSE"
-      }
-    ],
-    "screenshots": [],
+    "links": [],
     "version": "%VERSION%",
     "updated": "%TODAY%"
   },
@@ -36,8 +26,8 @@
   },
   "routes": [
     {
-      "path": "statistics/aggregate/stats",
-      "url": "https://{{if .JsonData.apiUrl }}{{ .JsonData.apiUrl }}{{else}}api.gcore.com{{end}}/cdn/statistics/aggregate/stats",
+      "path": "zones",
+      "url": "https://{{if .JsonData.apiUrl}}{{.JsonData.apiUrl}}{{else}}api.gcore.com{{end}}/dns/v2/zones",
       "headers": [
         {
           "name": "Authorization",
@@ -46,18 +36,8 @@
       ]
     },
     {
-      "path": "resources",
-      "url": "https://{{if .JsonData.apiUrl }}{{ .JsonData.apiUrl }}{{else}}api.gcore.com{{end}}/cdn/resources",
-      "headers": [
-        {
-          "name": "Authorization",
-          "content": "{{ .SecureJsonData.apiKey }}"
-        }
-      ]
-    },
-    {
-      "path": "users/me",
-      "url": "https://{{if .JsonData.apiUrl }}{{ .JsonData.apiUrl }}{{else}}api.gcore.com{{end}}/iam/users/me",
+      "path": "zones/all/statistics",
+      "url": "https://{{if .JsonData.apiUrl}}{{.JsonData.apiUrl}}{{else}}api.gcore.com{{end}}/dns/v2/zones/all/statistics",
       "headers": [
         {
           "name": "Authorization",

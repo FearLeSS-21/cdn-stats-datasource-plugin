@@ -1,129 +1,75 @@
-import {
-  GCServerMetric,
-  GCUnit,
-  GCMetric,
-  GCPoint,
-  GCClientMetric,
-} from "./types";
 import { SelectableValue } from "@grafana/data";
+import { GCDNSMetric, GCMetric, GCPoint } from "./types";
+
+export enum GCUnit {
+  Number = "count",
+  Milliseconds = "ms",
+}
 
 export interface GCReportsConfig {
-  originalMetric: GCServerMetric;
+  originalMetric: GCDNSMetric;
   label: string;
   unit: GCUnit;
 }
 
-export type GCGetterFn<T> = (
-  data: Partial<Record<GCServerMetric, GCPoint[]>>
-) => T;
+export type GCGetterFn<T> = (data: Partial<Record<GCDNSMetric, GCPoint[]>>) => T;
 
-const config: Record<GCMetric, GCReportsConfig> = {
-  [GCClientMetric.Bandwidth]: {
-    originalMetric: GCServerMetric.TotalBytes,
-    label: "Bandwidth",
-    unit: GCUnit.Bandwidth,
+const config = Object.values(GCDNSMetric).reduce(
+  (acc, metric) => {
+    switch (metric) {
+      case GCDNSMetric.Requests:
+        acc[metric] = { originalMetric: metric, label: "Total Requests", unit: GCUnit.Number };
+        break;
+      case GCDNSMetric.Responses:
+        acc[metric] = { originalMetric: metric, label: "Responses", unit: GCUnit.Number };
+        break;
+      case GCDNSMetric.Errors:
+        acc[metric] = { originalMetric: metric, label: "Errors", unit: GCUnit.Number };
+        break;
+      case GCDNSMetric.Latency:
+        acc[metric] = { originalMetric: metric, label: "Latency", unit: GCUnit.Milliseconds };
+        break;
+      case GCDNSMetric.NXDomain:
+        acc[metric] = { originalMetric: metric, label: "NXDomain Responses", unit: GCUnit.Number };
+        break;
+      case GCDNSMetric.ServFail:
+        acc[metric] = { originalMetric: metric, label: "ServFail Responses", unit: GCUnit.Number };
+        break;
+      case GCDNSMetric.Refused:
+        acc[metric] = { originalMetric: metric, label: "Refused Responses", unit: GCUnit.Number };
+        break;
+    }
+    return acc;
   },
-  [GCServerMetric.TotalBytes]: {
-    originalMetric: GCServerMetric.TotalBytes,
-    label: "Total Traffic",
-    unit: GCUnit.Bytes,
-  },
-  [GCServerMetric.UpstreamBytes]: {
-    originalMetric: GCServerMetric.UpstreamBytes,
-    label: "Origin Traffic",
-    unit: GCUnit.Bytes,
-  },
-  [GCServerMetric.SentBytes]: {
-    originalMetric: GCServerMetric.SentBytes,
-    label: "Edges Traffic",
-    unit: GCUnit.Bytes,
-  },
-  [GCServerMetric.ShieldBytes]: {
-    originalMetric: GCServerMetric.ShieldBytes,
-    label: "Shield Traffic",
-    unit: GCUnit.Bytes,
-  },
-  [GCServerMetric.Requests]: {
-    originalMetric: GCServerMetric.Requests,
-    label: "Total Requests",
-    unit: GCUnit.Number,
-  },
-  [GCServerMetric.RequestWafPassed]: {
-    originalMetric: GCServerMetric.RequestWafPassed,
-    label: "WAF requests",
-    unit: GCUnit.Number,
-  },
-  [GCServerMetric.Responses2xx]: {
-    originalMetric: GCServerMetric.Responses2xx,
-    label: "2xx Responses",
-    unit: GCUnit.Number,
-  },
-  [GCServerMetric.Responses3xx]: {
-    originalMetric: GCServerMetric.Responses3xx,
-    label: "3xx Responses",
-    unit: GCUnit.Number,
-  },
-  [GCServerMetric.Responses4xx]: {
-    originalMetric: GCServerMetric.Responses4xx,
-    label: "4xx Responses",
-    unit: GCUnit.Number,
-  },
-  [GCServerMetric.Responses5xx]: {
-    originalMetric: GCServerMetric.Responses5xx,
-    label: "5xx Responses",
-    unit: GCUnit.Number,
-  },
-  [GCServerMetric.ImageProcessed]: {
-    originalMetric: GCServerMetric.ImageProcessed,
-    label: "Image optimization",
-    unit: GCUnit.Number,
-  },
-  [GCServerMetric.CacheHitRequestsRatio]: {
-    originalMetric: GCServerMetric.CacheHitRequestsRatio,
-    label: "Cache Hit Ratio",
-    unit: GCUnit.Percent,
-  },
-  [GCServerMetric.CacheHitTrafficRatio]: {
-    originalMetric: GCServerMetric.CacheHitTrafficRatio,
-    label: "Byte Cache Hit Ratio",
-    unit: GCUnit.Percent,
-  },
-  [GCServerMetric.ShieldTrafficRatio]: {
-    originalMetric: GCServerMetric.ShieldTrafficRatio,
-    label: "Shield Traffic Ratio",
-    unit: GCUnit.Percent,
-  },
-};
+  {} as Record<GCMetric, GCReportsConfig>
+);
 
-export const createOptions = () =>
-  Object.entries(config).map(
-    ([value, { label }]) => ({ value, label } as SelectableValue<GCMetric>)
-  );
-export const createOptionForMetric = (
-  metric: GCMetric
-): SelectableValue<GCMetric> => ({ value: metric, ...config[metric] });
-export const getOriginalMetric = (metric: GCMetric): GCServerMetric =>
-  config[metric].originalMetric;
-export const getLabelByMetric = (metric: GCMetric): string =>
-  config[metric].label;
-export const getUnitByMetric = (metric: GCMetric): GCUnit =>
-  config[metric].unit;
+export const createOptions = (): Array<SelectableValue<GCMetric>> =>
+  Object.entries(config).map(([value, { label }]) => ({
+    value: value as GCMetric,
+    label,
+  }));
+
+export const createOptionForMetric = (metric: GCMetric): SelectableValue<GCMetric> => ({
+  value: metric,
+  ...config[metric],
+});
+
+export const getOriginalMetric = (metric: GCMetric): GCDNSMetric => config[metric].originalMetric;
+export const getLabelByMetric = (metric: GCMetric): string => config[metric].label;
+export const getUnitByMetric = (metric: GCMetric): GCUnit => config[metric].unit;
+
 export const createGetterSample = (metric: GCMetric): GCGetterFn<GCPoint[]> => (
-  data: Partial<Record<GCServerMetric, GCPoint[]>>
+  data: Partial<Record<GCDNSMetric, GCPoint[]>>
 ): GCPoint[] => {
   const originalMetric = getOriginalMetric(metric);
-  if (data[originalMetric]) {
-    return data[originalMetric] || [];
-  }
-  return [];
+  return data[originalMetric] || [];
 };
+
 export const createGetterYValues = (metric: GCMetric): GCGetterFn<number[]> => (
-  data: Partial<Record<GCServerMetric, GCPoint[]>>
+  data: Partial<Record<GCDNSMetric, GCPoint[]>>
 ): number[] => {
   const originalMetric = getOriginalMetric(metric);
-  if (data[originalMetric]) {
-    const points = data[originalMetric] || [];
-    return points.map((p) => p[1]);
-  }
-  return [];
+  const points = data[originalMetric] || [];
+  return points.map((p) => p[1]);
 };
