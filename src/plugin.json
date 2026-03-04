@@ -1,14 +1,14 @@
 {
   "$schema": "https://raw.githubusercontent.com/grafana/grafana/master/docs/sources/developers/plugins/plugin.schema.json",
   "type": "datasource",
-  "name": "cdn-stats",
+  "name": "Gcore CDN",
   "id": "gcorelabs-cdn-stats-datasource",
   "metrics": true,
   "backend": true,
   "alerting": true,
   "executable": "gcore-cdn-stats-datasource",
   "info": {
-    "description": "",
+    "description": "Datasource for Gcore CDN Statistics",
     "author": {
       "name": "G-Core",
       "url": "https://gcore.com/",

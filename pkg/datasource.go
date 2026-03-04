@@ -133,7 +133,7 @@ func handleAPIError(statusCode int, body []byte) error {
 	case http.StatusBadRequest:
 		return fmt.Errorf("bad request (400): %s. Please check your query parameters", errorMsg)
 	case http.StatusUnauthorized:
-		// Specific message for Case 1/2/3 to differentiate auth error from data error.
+		
 		return fmt.Errorf("datasource authentication error: invalid API key. Please verify your credentials in the datasource settings")
 	case http.StatusForbidden:
 		return fmt.Errorf("forbidden (403): access denied. You may not have permissions to access this resource")

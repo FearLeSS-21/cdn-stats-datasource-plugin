@@ -11,7 +11,11 @@
     "sign": "npx --yes @grafana/sign-plugin@latest",
     "test": "jest --watch --onlyChanged",
     "test:ci": "jest --passWithNoTests --maxWorkers 4",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "build:backend:linux": "set GOOS=linux&& set GOARCH=amd64&& go build -C pkg -o ../dist/gcore-cdn-stats-datasource_linux_amd64 .",
+    "build:backend:windows": "set GOOS=windows&& set GOARCH=amd64&& go build -C pkg -o ../dist/gcore-cdn-stats-datasource_windows_amd64.exe .",
+    "build:backend": "yarn build:backend:linux && yarn build:backend:windows",
+    "build:all": "yarn build && yarn build:backend"
   },
   "husky": {
     "hooks": {
